@@ -17,15 +17,28 @@
 
 @implementation JXCategoryIndicatorLineView
 
-- (instancetype)initWithFrame:(CGRect)frame
-{
+#pragma mark - Initialize
+
+- (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        _lineStyle = JXCategoryIndicatorLineStyle_Normal;
-        _lineScrollOffsetX = 10;
-        self.indicatorHeight = 3;
+        [self configureDefaulteValue];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)coder {
+    self = [super initWithCoder:coder];
+    if (self) {
+        [self configureDefaulteValue];
+    }
+    return self;
+}
+
+- (void)configureDefaulteValue {
+    _lineStyle = JXCategoryIndicatorLineStyle_Normal;
+    _lineScrollOffsetX = 10;
+    self.indicatorHeight = 3;
 }
 
 #pragma mark - JXCategoryIndicatorProtocol
@@ -101,7 +114,7 @@
     targetIndicatorFrame.origin.x = model.selectedCellFrame.origin.x + (model.selectedCellFrame.size.width - targetIndicatorWidth)/2.0;
     targetIndicatorFrame.size.width = targetIndicatorWidth;
     if (self.isScrollEnabled) {
-        if (self.scrollStyle == JXCategoryIndicatorScrollStyleSameAsUserScroll) {
+        if (self.scrollStyle == JXCategoryIndicatorScrollStyleSameAsUserScroll && (model.selectedType == JXCategoryCellSelectedTypeClick | model.selectedType == JXCategoryCellSelectedTypeCode)) {
             if (self.animator.isExecuting) {
                 [self.animator invalid];
                 self.animator = nil;

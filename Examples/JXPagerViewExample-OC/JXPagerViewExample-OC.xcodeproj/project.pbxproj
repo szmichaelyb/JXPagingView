@@ -54,8 +54,8 @@
 		19FAC94A23827F160041E1C9 /* SmoothListCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 19FAC94923827F160041E1C9 /* SmoothListCollectionViewController.m */; };
 		19FAC94D23828B350041E1C9 /* SmoothListScrollViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 19FAC94C23828B350041E1C9 /* SmoothListScrollViewController.m */; };
 		19FAC95023828E0D0041E1C9 /* SmoothCustomPagerHeaderViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 19FAC94F23828E0D0041E1C9 /* SmoothCustomPagerHeaderViewController.m */; };
+		EADC1FBFEA3903BCC1E948B3 /* Pods_JXPagerViewExample_OC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FCA21D0AD80DF7ECFAA680A3 /* Pods_JXPagerViewExample_OC.framework */; };
 		EAF8D56C274897A200AE1569 /* SmoothTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = EAF8D56B274897A200AE1569 /* SmoothTableView.m */; };
-		FF053089944F44A0F635F394 /* libPods-JXPagerViewExample-OC.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F7462D375D10977F46C22C6B /* libPods-JXPagerViewExample-OC.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -155,7 +155,7 @@
 		7C9EC10DC38C7A20D2C6FE7C /* Pods-JXPagerViewExample-OC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JXPagerViewExample-OC.debug.xcconfig"; path = "Target Support Files/Pods-JXPagerViewExample-OC/Pods-JXPagerViewExample-OC.debug.xcconfig"; sourceTree = "<group>"; };
 		EAF8D56A274897A200AE1569 /* SmoothTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SmoothTableView.h; sourceTree = "<group>"; };
 		EAF8D56B274897A200AE1569 /* SmoothTableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SmoothTableView.m; sourceTree = "<group>"; };
-		F7462D375D10977F46C22C6B /* libPods-JXPagerViewExample-OC.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-JXPagerViewExample-OC.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FCA21D0AD80DF7ECFAA680A3 /* Pods_JXPagerViewExample_OC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_JXPagerViewExample_OC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,7 +163,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FF053089944F44A0F635F394 /* libPods-JXPagerViewExample-OC.a in Frameworks */,
+				EADC1FBFEA3903BCC1E948B3 /* Pods_JXPagerViewExample_OC.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -459,7 +459,7 @@
 		7FC047E60E9F785952801AA5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				F7462D375D10977F46C22C6B /* libPods-JXPagerViewExample-OC.a */,
+				FCA21D0AD80DF7ECFAA680A3 /* Pods_JXPagerViewExample_OC.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -484,7 +484,7 @@
 				196427FC2148E47F009C1D31 /* Sources */,
 				196427FD2148E47F009C1D31 /* Frameworks */,
 				196427FE2148E47F009C1D31 /* Resources */,
-				818D48A002E4E0DFF106228E /* [CP] Copy Pods Resources */,
+				ACBB5CFF1AE77DE69EAC3E3A /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -543,21 +543,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		818D48A002E4E0DFF106228E /* [CP] Copy Pods Resources */ = {
+		ACBB5CFF1AE77DE69EAC3E3A /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-JXPagerViewExample-OC/Pods-JXPagerViewExample-OC-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-JXPagerViewExample-OC/Pods-JXPagerViewExample-OC-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			name = "[CP] Copy Pods Resources";
+			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-JXPagerViewExample-OC/Pods-JXPagerViewExample-OC-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-JXPagerViewExample-OC/Pods-JXPagerViewExample-OC-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-JXPagerViewExample-OC/Pods-JXPagerViewExample-OC-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-JXPagerViewExample-OC/Pods-JXPagerViewExample-OC-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		CE33A59396B2B595330C12A6 /* [CP] Check Pods Manifest.lock */ = {

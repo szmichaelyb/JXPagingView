@@ -26,10 +26,6 @@ open class JXSegmentedNumberDataSource: JXSegmentedTitleDataSource {
     open var numberStringFormatterClosure: ((Int) -> String)?
     /// numberLabel的高度，默认：14
     open var numberHeight: CGFloat = 14
-    
-    deinit {
-        numberStringFormatterClosure = nil
-    }
 
     open override func preferredItemModelInstance() -> JXSegmentedBaseItemModel {
         return JXSegmentedNumberItemModel()
@@ -53,6 +49,7 @@ open class JXSegmentedNumberDataSource: JXSegmentedTitleDataSource {
         itemModel.numberOffset = numberOffset
         itemModel.numberWidthIncrement = numberWidthIncrement
         itemModel.numberHeight = numberHeight
+        itemModel.numberFont = numberFont
     }
 
     //MARK: - JXSegmentedViewDataSource

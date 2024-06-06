@@ -1,0 +1,6 @@
+framework module Pods_JXPagerViewExample_OC {
+  umbrella header "Pods-JXPagerViewExample-OC-umbrella.h"
+
+  export *
+  module * { export * }
+}

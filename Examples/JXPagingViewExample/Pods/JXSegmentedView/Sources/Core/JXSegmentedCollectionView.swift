@@ -10,7 +10,7 @@ import UIKit
 
 open class JXSegmentedCollectionView: UICollectionView {
 
-    open var indicators = [JXSegmentedIndicatorProtocol & UIView]() {
+    open var indicators = [JXSegmentedIndicatorProtocol]() {
         willSet {
             for indicator in indicators {
                 indicator.removeFromSuperview()
@@ -28,6 +28,9 @@ open class JXSegmentedCollectionView: UICollectionView {
 
         for indicator in indicators {
             sendSubviewToBack(indicator)
+            if let backgroundView = backgroundView {
+                sendSubviewToBack(backgroundView)
+            }
         }
     }
 

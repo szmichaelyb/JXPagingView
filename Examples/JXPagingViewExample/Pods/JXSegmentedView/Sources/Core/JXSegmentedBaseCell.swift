@@ -10,7 +10,7 @@ import UIKit
 
 public typealias JXSegmentedCellSelectedAnimationClosure = (CGFloat)->()
 
-open class JXSegmentedBaseCell: UICollectionViewCell {
+open class JXSegmentedBaseCell: UICollectionViewCell, JXSegmentedViewRTLCompatible {
     open var itemModel: JXSegmentedBaseItemModel?
     open var animator: JXSegmentedAnimator?
     private var selectedAnimationClosureArray = [JXSegmentedCellSelectedAnimationClosure]()
@@ -23,6 +23,7 @@ open class JXSegmentedBaseCell: UICollectionViewCell {
         super.prepareForReuse()
 
         animator?.stop()
+        animator = nil
     }
 
     public override init(frame: CGRect) {
@@ -38,7 +39,10 @@ open class JXSegmentedBaseCell: UICollectionViewCell {
     }
 
     open func commonInit() {
-        
+        if segmentedViewShouldRTLLayout() {
+            segmentedView(horizontalFlipForView: self)
+            segmentedView(horizontalFlipForView: contentView)
+        }
     }
 
     open func canStartSelectedAnimation(itemModel: JXSegmentedBaseItemModel, selectedType: JXSegmentedViewItemSelectedType) -> Bool {
@@ -91,7 +95,24 @@ open class JXSegmentedBaseCell: UICollectionViewCell {
                 animator?.duration = itemModel.selectedAnimationDuration
             }else {
                 animator?.stop()
+                animator = nil
             }
         }
+    }
+    
+    open override var isSelected: Bool {
+        didSet {
+            setSelectedStyle(isSelected: isSelected)
+        }
+    }
+    
+    open override var isHighlighted: Bool {
+        didSet {
+            setSelectedStyle(isSelected: isHighlighted)
+        }
+    }
+    
+    func setSelectedStyle(isSelected: Bool) {
+        
     }
 }

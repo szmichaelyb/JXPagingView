@@ -16,15 +16,28 @@
 
 @implementation JXCategoryIndicatorDotLineView
 
-- (instancetype)initWithFrame:(CGRect)frame
-{
+#pragma mark - Initialize
+
+- (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.indicatorWidth = 10;
-        self.indicatorHeight = 10;
-        _lineWidth = 50;
+        [self configureDefaulteValue];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)coder {
+    self = [super initWithCoder:coder];
+    if (self) {
+        [self configureDefaulteValue];
+    }
+    return self;
+}
+
+- (void)configureDefaulteValue {
+    self.indicatorWidth = 10;
+    self.indicatorHeight = 10;
+    _lineWidth = 50;
 }
 
 #pragma mark - JXCategoryIndicatorProtocol
@@ -84,7 +97,7 @@
     CGRect targetIndicatorFrame = self.frame;
     targetIndicatorFrame.origin.x = x;
     if (self.isScrollEnabled) {
-        if (self.scrollStyle == JXCategoryIndicatorScrollStyleSameAsUserScroll) {
+        if (self.scrollStyle == JXCategoryIndicatorScrollStyleSameAsUserScroll && (model.selectedType == JXCategoryCellSelectedTypeClick | model.selectedType == JXCategoryCellSelectedTypeCode)) {
             if (self.animator.isExecuting) {
                 [self.animator invalid];
                 self.animator = nil;

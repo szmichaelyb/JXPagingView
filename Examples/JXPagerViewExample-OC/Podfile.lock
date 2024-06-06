@@ -1,20 +1,34 @@
 PODS:
   - FDFullscreenPopGesture (1.1)
-  - JXCategoryView (1.5.2)
-  - JXPagingView/Pager (2.0.2)
-  - MJRefresh (3.4.0)
+  - JXCategoryView (1.6.3)
+  - JXPagingView/Pager (2.1.3)
+  - LookinServer (1.2.8):
+    - LookinServer/Core (= 1.2.8)
+  - LookinServer/Core (1.2.8)
+  - Masonry (1.1.0)
+  - MJExtension (3.4.2)
+  - MJRefresh (3.7.9)
+  - MyLayout (1.9.10)
 
 DEPENDENCIES:
-  - FDFullscreenPopGesture (= 1.1)
+  - FDFullscreenPopGesture
   - JXCategoryView
   - JXPagingView/Pager (from `../../../JXPagingView`)
-  - MJRefresh (= 3.4.0)
+  - LookinServer
+  - Masonry
+  - MJExtension
+  - MJRefresh
+  - MyLayout
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - FDFullscreenPopGesture
     - JXCategoryView
+    - LookinServer
+    - Masonry
+    - MJExtension
     - MJRefresh
+    - MyLayout
 
 EXTERNAL SOURCES:
   JXPagingView:
@@ -22,10 +36,14 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   FDFullscreenPopGesture: a8a620179e3d9c40e8e00256dcee1c1a27c6d0f0
-  JXCategoryView: b284d35a7a8772eada05dd78642233e1eb763ea8
-  JXPagingView: 6a871421874fbbd3d38f03bcc7a2a5b9f59cc76b
-  MJRefresh: 95b08b3b8b6457d2c69510439e0349599050ea34
+  JXCategoryView: 99cbbab7ed3fd2cb2484208c9f39461820d10a13
+  JXPagingView: afdd2e9af09c90160dd232b970d603cc6e7ddd0e
+  LookinServer: 1b2b61c6402ae29fa22182d48f5cd067b4e99e80
+  Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
+  MJExtension: e97d164cb411aa9795cf576093a1fa208b4a8dd8
+  MJRefresh: ff9e531227924c84ce459338414550a05d2aea78
+  MyLayout: 39ee012bd780936c973bdc5d8ce0f84e3de489d7
 
-PODFILE CHECKSUM: f2f368988a01cb8305f116e306d3d45a46ce0a01
+PODFILE CHECKSUM: 26481f1964ab6b64bddb123631fcd4f6f7244828
 
-COCOAPODS: 1.7.5
+COCOAPODS: 1.15.2

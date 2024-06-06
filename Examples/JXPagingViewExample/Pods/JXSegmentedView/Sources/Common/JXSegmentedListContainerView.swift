@@ -9,8 +9,8 @@
 import UIKit
 
 /// 列表容器视图的类型
-///- ScrollView: UIScrollView。优势：没有其他副作用。劣势：视图内存占用相对大一点。
-/// - CollectionView: 使用UICollectionView。优势：因为列表被添加到cell上，视图的内存占用更少，适合内存要求特别高的场景。劣势：因为cell重用机制的问题，导致列表下拉刷新视图(比如MJRefresh)，会因为被removeFromSuperview而被隐藏。需要参考`LoadDataListViewController`类做特殊处理。
+///- ScrollView: UIScrollView。优势：没有其他副作用。劣势：视图内存占用相对大一点。因为所有的列表视图都在UIScrollView的视图层级里面。
+/// - CollectionView: 使用UICollectionView。优势：因为列表被添加到cell上，视图的内存占用更少，适合内存要求特别高的场景。劣势：因为cell重用机制的问题，导致列表下拉刷新视图(比如MJRefresh)，会因为被removeFromSuperview而被隐藏。所以，列表有下拉刷新需求的，请使用scrollView type。
 public enum JXSegmentedListContainerType {
     case scrollView
     case collectionView
@@ -23,21 +23,15 @@ public protocol JXSegmentedListContainerViewListDelegate {
     ///
     /// - Returns: 返回列表视图
     func listView() -> UIView
-    /// 可选实现，列表将要显示的时候调用
     @objc optional func listWillAppear()
-    /// 可选实现，列表显示的时候调用
     @objc optional func listDidAppear()
-    /// 可选实现，列表将要消失的时候调用
     @objc optional func listWillDisappear()
-    /// 可选实现，列表消失的时候调用
     @objc optional func listDidDisappear()
 }
 
 @objc
 public protocol JXSegmentedListContainerViewDataSource {
     /// 返回list的数量
-    ///
-    /// - Parameter listContainerView: JXSegmentedListContainerView
     func numberOfLists(in listContainerView: JXSegmentedListContainerView) -> Int
 
     /// 根据index初始化一个对应列表实例，需要是遵从`JXSegmentedListContainerViewListDelegate`协议的对象。
@@ -63,12 +57,12 @@ public protocol JXSegmentedListContainerViewDataSource {
     @objc optional func scrollViewClass(in listContainerView: JXSegmentedListContainerView) -> AnyClass
 }
 
-open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
-    public private(set) var type: JXSegmentedListContainerType
-    public private(set) weak var dataSource: JXSegmentedListContainerViewDataSource!
-    public private(set) var scrollView: UIScrollView!
+open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, JXSegmentedViewRTLCompatible {
+    open private(set) var type: JXSegmentedListContainerType
+    open private(set) weak var dataSource: JXSegmentedListContainerViewDataSource?
+    open private(set) var scrollView: UIScrollView!
     /// 已经加载过的列表字典。key是index，value是对应的列表
-    open var validListDict = [Int:JXSegmentedListContainerViewListDelegate]()
+    open private(set) var validListDict = [Int:JXSegmentedListContainerViewListDelegate]()
     /// 滚动切换的时候，滚动距离超过一页的多少百分比，就触发列表的初始化。默认0.01（即列表显示了一点就触发加载）。范围0~1，开区间不包括0和1
     open var initListPercent: CGFloat = 0.01 {
         didSet {
@@ -77,16 +71,26 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
             }
         }
     }
-    public var listCellBackgroundColor: UIColor = .white
+    open var listCellBackgroundColor: UIColor = .white
     /// 需要和segmentedView.defaultSelectedIndex保持一致，用于触发默认index列表的加载
-    public var defaultSelectedIndex: Int = 0 {
+    open var defaultSelectedIndex: Int = 0 {
         didSet {
             currentIndex = defaultSelectedIndex
         }
     }
     private var currentIndex: Int = 0
-    private var collectionView: UICollectionView!
-    private var containerVC: JXSegmentedListContainerViewController!
+    private lazy var collectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.minimumLineSpacing = 0
+        layout.minimumInteritemSpacing = 0
+        if let collectionViewClass = dataSource?.scrollViewClass?(in: self) as? UICollectionView.Type {
+            return collectionViewClass.init(frame: CGRect.zero, collectionViewLayout: layout)
+        }else {
+            return UICollectionView.init(frame: CGRect.zero, collectionViewLayout: layout)
+        }
+    }()
+    private lazy var containerVC = JXSegmentedListContainerViewController()
     private var willAppearIndex: Int = -1
     private var willDisappearIndex: Int = -1
 
@@ -103,7 +107,6 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
     }
 
     open func commonInit() {
-        containerVC = JXSegmentedListContainerViewController()
         containerVC.view.backgroundColor = .clear
         addSubview(containerVC.view)
         containerVC.viewWillAppearClosure = {[weak self] in
@@ -119,7 +122,7 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
             self?.listDidDisappear(at: self?.currentIndex ?? 0)
         }
         if type == .scrollView {
-            if let scrollViewClass = dataSource.scrollViewClass?(in: self) as? UIScrollView.Type {
+            if let scrollViewClass = dataSource?.scrollViewClass?(in: self) as? UIScrollView.Type {
                 scrollView = scrollViewClass.init()
             }else {
                 scrollView = UIScrollView.init()
@@ -133,17 +136,11 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
             if #available(iOS 11.0, *) {
                 scrollView.contentInsetAdjustmentBehavior = .never
             }
+            if segmentedViewShouldRTLLayout() {
+                segmentedView(horizontalFlipForView: scrollView)
+            }
             containerVC.view.addSubview(scrollView)
         }else if type == .collectionView {
-            let layout = UICollectionViewFlowLayout()
-            layout.scrollDirection = .horizontal
-            layout.minimumLineSpacing = 0
-            layout.minimumInteritemSpacing = 0
-            if let collectionViewClass = dataSource.scrollViewClass?(in: self) as? UICollectionView.Type {
-                collectionView = collectionViewClass.init(frame: CGRect.zero, collectionViewLayout: layout)
-            }else {
-                collectionView = UICollectionView.init(frame: CGRect.zero, collectionViewLayout: layout)
-            }
             collectionView.isPagingEnabled = true
             collectionView.showsHorizontalScrollIndicator = false
             collectionView.showsVerticalScrollIndicator = false
@@ -151,12 +148,16 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
             collectionView.bounces = false
             collectionView.dataSource = self
             collectionView.delegate = self
-            collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
+            collectionView.register(JXSegmentedRTLCollectionCell.self, forCellWithReuseIdentifier: "cell")
             if #available(iOS 10.0, *) {
                 collectionView.isPrefetchingEnabled = false
             }
             if #available(iOS 11.0, *) {
                 self.collectionView.contentInsetAdjustmentBehavior = .never
+            }
+            if segmentedViewShouldRTLLayout() {
+                collectionView.semanticContentAttribute = .forceLeftToRight
+                segmentedView(horizontalFlipForView: collectionView)
             }
             containerVC.view.addSubview(collectionView)
             //让外部统一访问scrollView
@@ -180,17 +181,20 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
         super.layoutSubviews()
 
         containerVC.view.frame = bounds
+        guard let count = dataSource?.numberOfLists(in: self) else {
+            return
+        }
         if type == .scrollView {
             if scrollView.frame == CGRect.zero || scrollView.bounds.size != bounds.size {
                 scrollView.frame = bounds
-                scrollView.contentSize = CGSize(width: scrollView.bounds.size.width*CGFloat(dataSource.numberOfLists(in: self)), height: scrollView.bounds.size.height)
+                scrollView.contentSize = CGSize(width: scrollView.bounds.size.width*CGFloat(count), height: scrollView.bounds.size.height)
                 for (index, list) in validListDict {
                     list.listView().frame = CGRect(x: CGFloat(index)*scrollView.bounds.size.width, y: 0, width: scrollView.bounds.size.width, height: scrollView.bounds.size.height)
                 }
                 scrollView.contentOffset = CGPoint(x: CGFloat(currentIndex)*scrollView.bounds.size.width, y: 0)
             }else {
                 scrollView.frame = bounds
-                scrollView.contentSize = CGSize(width: scrollView.bounds.size.width*CGFloat(dataSource.numberOfLists(in: self)), height: scrollView.bounds.size.height)
+                scrollView.contentSize = CGSize(width: scrollView.bounds.size.width*CGFloat(count), height: scrollView.bounds.size.height)
             }
         }else {
             if collectionView.frame == CGRect.zero || collectionView.bounds.size != bounds.size {
@@ -210,37 +214,6 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
        }
 
     public func scrolling(from leftIndex: Int, to rightIndex: Int, percent: CGFloat, selectedIndex: Int) {
-        if rightIndex == selectedIndex {
-            //当前选中的在右边，用户正在从右边往左边滑动
-            if percent < (1 - initListPercent) {
-                initListIfNeeded(at: leftIndex)
-            }
-            if willAppearIndex == -1 {
-                willAppearIndex = leftIndex;
-                if validListDict[leftIndex] != nil {
-                    listWillAppear(at: willAppearIndex)
-                }
-            }
-            if willDisappearIndex == -1 {
-                willDisappearIndex = rightIndex
-                listWillDisappear(at: willDisappearIndex)
-            }
-        }else {
-            //当前选中的在左边，用户正在从左边往右边滑动
-            if percent > initListPercent {
-                initListIfNeeded(at: rightIndex)
-            }
-            if willAppearIndex == -1 {
-                willAppearIndex = rightIndex
-                if validListDict[rightIndex] != nil {
-                    listWillAppear(at: willAppearIndex)
-                }
-            }
-            if willDisappearIndex == -1 {
-                willDisappearIndex = leftIndex
-                listWillDisappear(at: willDisappearIndex)
-            }
-        }
     }
 
     open func didClickSelectedItem(at index: Int) {
@@ -258,11 +231,17 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
     }
 
     open func reloadData() {
+        guard let dataSource = dataSource else { return }
         if currentIndex < 0 || currentIndex >= dataSource.numberOfLists(in: self) {
             defaultSelectedIndex = 0
             currentIndex = 0
         }
-        validListDict.values.forEach{ $0.listView().removeFromSuperview() }
+        validListDict.values.forEach { (list) in
+            if let listVC = list as? UIViewController {
+                listVC.removeFromParent()
+            }
+            list.listView().removeFromSuperview()
+        }
         validListDict.removeAll()
         if type == .scrollView {
             scrollView.contentSize = CGSize(width: scrollView.bounds.size.width*CGFloat(dataSource.numberOfLists(in: self)), height: scrollView.bounds.size.height)
@@ -275,6 +254,7 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
 
     //MARK: - Private
     func initListIfNeeded(at index: Int) {
+        guard let dataSource = dataSource else { return }
         if dataSource.listContainerView?(self, canInitListAt: index) == false {
             return
         }
@@ -294,16 +274,20 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
         if type == .scrollView {
             list.listView().frame = CGRect(x: CGFloat(index)*scrollView.bounds.size.width, y: 0, width: scrollView.bounds.size.width, height: scrollView.bounds.size.height)
             scrollView.addSubview(list.listView())
+            
+            if segmentedViewShouldRTLLayout() {
+                segmentedView(horizontalFlipForView: list.listView())
+            }
         }else {
             let cell = collectionView.cellForItem(at: IndexPath(item: index, section: 0))
             cell?.contentView.subviews.forEach { $0.removeFromSuperview() }
             list.listView().frame = cell?.contentView.bounds ?? CGRect.zero
             cell?.contentView.addSubview(list.listView())
         }
-        listWillAppear(at: index)
     }
 
     private func listWillAppear(at index: Int) {
+        guard let dataSource = dataSource else { return }
         guard checkIndexValid(index) else {
             return
         }
@@ -330,6 +314,10 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
                 if list.listView().superview == nil {
                     list.listView().frame = CGRect(x: CGFloat(index)*scrollView.bounds.size.width, y: 0, width: scrollView.bounds.size.width, height: scrollView.bounds.size.height)
                     scrollView.addSubview(list.listView())
+                    
+                    if segmentedViewShouldRTLLayout() {
+                        segmentedView(horizontalFlipForView: list.listView())
+                    }
                 }
                 list.listWillAppear?()
                 if let vc = list as? UIViewController {
@@ -383,36 +371,15 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer {
     }
 
     private func checkIndexValid(_ index: Int) -> Bool {
+        guard let dataSource = dataSource else { return false }
         let count = dataSource.numberOfLists(in: self)
         if count <= 0 || index >= count {
             return false
         }
         return true
     }
-}
 
-extension JXSegmentedListContainerView: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return dataSource.numberOfLists(in: self)
-    }
-
-    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-        cell.contentView.backgroundColor = listCellBackgroundColor
-        cell.contentView.subviews.forEach { $0.removeFromSuperview() }
-        let list = validListDict[indexPath.item]
-        if list != nil {
-            list?.listView().frame = cell.contentView.bounds
-            cell.contentView.addSubview(list!.listView())
-        }
-        return cell
-    }
-
-    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return bounds.size
-    }
-
-    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    private func listDidAppearOrDisappear(scrollView: UIScrollView) {
         let currentIndexPercent = scrollView.contentOffset.x/scrollView.bounds.size.width
         if willAppearIndex != -1 || willDisappearIndex != -1 {
             let disappearIndex = willDisappearIndex
@@ -436,8 +403,79 @@ extension JXSegmentedListContainerView: UICollectionViewDataSource, UICollection
             }
         }
     }
+}
+
+extension JXSegmentedListContainerView: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        guard let dataSource = dataSource else { return 0 }
+        return dataSource.numberOfLists(in: self)
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
+        cell.contentView.backgroundColor = listCellBackgroundColor
+        cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+        let list = validListDict[indexPath.item]
+        if list != nil {
+            list?.listView().frame = cell.contentView.bounds
+            cell.contentView.addSubview(list!.listView())
+        }
+        return cell
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return bounds.size
+    }
+
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard scrollView.isTracking || scrollView.isDragging || scrollView.isDecelerating else {
+            return
+        }
+        let percent = scrollView.contentOffset.x/scrollView.bounds.size.width
+        let maxCount = Int(round(scrollView.contentSize.width/scrollView.bounds.size.width))
+        var leftIndex = Int(floor(Double(percent)))
+        leftIndex = max(0, min(maxCount - 1, leftIndex))
+        let rightIndex = leftIndex + 1;
+        if percent < 0 || rightIndex >= maxCount {
+            listDidAppearOrDisappear(scrollView: scrollView)
+            return
+        }
+        let remainderRatio = percent - CGFloat(leftIndex)
+        if rightIndex == currentIndex {
+            //当前选中的在右边，用户正在从右边往左边滑动
+            if validListDict[leftIndex] == nil && remainderRatio < (1 - initListPercent) {
+                initListIfNeeded(at: leftIndex)
+            }else if validListDict[leftIndex] != nil {
+                if willAppearIndex == -1 {
+                    willAppearIndex = leftIndex;
+                    listWillAppear(at: willAppearIndex)
+                }
+            }
+
+            if willDisappearIndex == -1 {
+                willDisappearIndex = rightIndex
+                listWillDisappear(at: willDisappearIndex)
+            }
+        }else {
+            //当前选中的在左边，用户正在从左边往右边滑动
+            if validListDict[rightIndex] == nil && remainderRatio > initListPercent {
+                initListIfNeeded(at: rightIndex)
+            }else if validListDict[rightIndex] != nil {
+                if willAppearIndex == -1 {
+                    willAppearIndex = rightIndex
+                    listWillAppear(at: willAppearIndex)
+                }
+            }
+            if willDisappearIndex == -1 {
+                willDisappearIndex = leftIndex
+                listWillDisappear(at: willDisappearIndex)
+            }
+        }
+        listDidAppearOrDisappear(scrollView: scrollView)
+    }
 
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        //滑动到一半又取消滑动处理
         if willAppearIndex != -1 || willDisappearIndex != -1 {
             listWillDisappear(at: willAppearIndex)
             listWillAppear(at: willDisappearIndex)
